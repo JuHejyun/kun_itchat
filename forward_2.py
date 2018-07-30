@@ -47,12 +47,12 @@ def group_reply_text(msg):
 
     # 根据消息类型转发至其他需要同步消息的群聊
     if msg['Type'] == TEXT:
-        q.put('%s\n%s' % (username, msg['Content']))
+        q.put('robot --> %s:\n%s' % (username, msg['Content']))
         # for item in chatroom_sync:
         #     if not item['UserName'] == chatroom_id:
         #         itchat.send('%s\n%s' % (username, msg['Content']), item['UserName'])
     elif msg['Type'] == SHARING:
-        q.put('%s\n%s\n%s' % (username, msg['Text'], msg['Url']))
+        q.put('robot --> %s (share): %s\n%s' % (username, msg['Text'], msg['Url']))
         # for item in chatroom_sync:
         #     if not item['UserName'] == chatroom_id:
         #         itchat.send('%s\n%s\n%s' % (username, msg['Text'], msg['Url']), item['UserName'])
@@ -77,7 +77,7 @@ def group_reply_media(msg):
     # 下载图片等文件
     msg['Text'](msg['FileName'])
 
-    # q.put('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']))
+    tu.put('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']))
 
 
     # 转发至其他需要同步消息的群聊
@@ -85,7 +85,8 @@ def group_reply_media(msg):
     #     if not item['UserName'] == chatroom_id:
     #         itchat.send('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']), item['UserName'])
 
-def send_msg(q,chatroom_sync):
+def send_msg(q,tu,chatroom_sync):
+    itchat.auto_login(hotReload=True)
     while True:
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         allmsg=set({})
@@ -97,7 +98,11 @@ def send_msg(q,chatroom_sync):
             for item in chatroom_sync:
                 # if not item['UserName'] == chatroom_id:
                 print(''.join(str(e) for e in allmsg))
-                itchat.send('%s\n%s' % ('aaaaa', 'bbbb'), item['UserName'])
+                itchat.send(''.join(str(e) for e in allmsg), item['UserName'])
+        while not tu.empty():
+            value = tu.get(True)  # 获取
+            for item in chatroom_sync:
+                itchat.send(value,item['UserName'])
         time.sleep(10)
 
 
@@ -106,6 +111,7 @@ chatroom_ids=[]
 chatroom_sync=[]
 # 父进程创建Queue，并传给各个子进程：
 q = Queue()
+tu = Queue()
 if __name__ == '__main__':
     # 扫二维码登录
     itchat.auto_login(hotReload=True)
@@ -116,7 +122,7 @@ if __name__ == '__main__':
     #chatroom_ids = [c['UserName'] for c in chatrooms]
     for c in chatrooms:
         # if c['NickName'] in ['华大小分队','华大']:
-        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('奶牛')>=0 or c['NickName'].find('内购')>=0 or c['NickName'].find('代购')>=0 or c['NickName'].find('盈透')>=0:
+        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('奶牛')>=0 or c['NickName'].find('内购')>=0 or c['NickName'].find('代购')>=0 or c['NickName'].find('盈透')>=0 or c['NickName'].find('租房')>=0:
             chatroom_ids.append(c['UserName'])
         elif c['NickName'].find('那些年')>=0:
         # if c['NickName'].index("那些年")>=0:
@@ -124,7 +130,7 @@ if __name__ == '__main__':
         #else:
             #print ('排除的：',c['NickName'])
 
-    pr = Process(target=send_msg, args=(q,chatroom_sync,))
+    pr = Process(target=send_msg, args=(q,tu,chatroom_sync,))
     # 启动子进程pr，读取:
     pr.start()
     print (' '.join([item['NickName'] for item in chatrooms]))
