@@ -2,6 +2,7 @@
 # coding:utf8
  
 import itchat
+from multiprocessing import Process, Queue
 from itchat.content import *
  
 # 自动回复文本等类别消息
@@ -89,10 +90,10 @@ chatrooms = itchat.get_chatrooms(update=True, contactOnly=True)
 chatroom_ids=[]
 chatroom_sync=[]
 for c in chatrooms:
-    #if c['NickName'] in ['华大小分队','华大']:
-    chatroom_ids.append(c['UserName'])
-    #elif c['NickName'] in ['那些年']:
-    if not c['NickName'] in ['那些年']:
+    if c['NickName'] in ['华大小分队','华大']:
+        chatroom_ids.append(c['UserName'])
+    elif c['NickName'].find('那些年')>=0:
+    # if c['NickName'].index("那些年")>=0:
         chatroom_sync.append(c)
     #else:
         #print ('排除的：',c['NickName'])
