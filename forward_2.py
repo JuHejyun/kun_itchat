@@ -76,34 +76,32 @@ def group_reply_media(msg):
     for item in chatroom_sync:
         if not item['UserName'] == chatroom_id:
             itchat.send('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']), item['UserName'])
- 
- 
- 
- 
-# 扫二维码登录
-itchat.auto_login(hotReload=True)
-# 获取所有通讯录中的群聊
-# 需要在微信中将需要同步的群聊都保存至通讯录
-chatrooms = itchat.get_chatrooms(update=True, contactOnly=True)
-#print ('chatrooms：', chatrooms)
-#chatroom_ids = [c['UserName'] for c in chatrooms]
-chatroom_ids=[]
-chatroom_sync=[]
-for c in chatrooms:
-    if c['NickName'] in ['华大小分队','华大']:
-        chatroom_ids.append(c['UserName'])
-    elif c['NickName'].find('那些年')>=0:
-    # if c['NickName'].index("那些年")>=0:
-        chatroom_sync.append(c)
-    #else:
-        #print ('排除的：',c['NickName'])
+
+if __name__ == '__main__':
+    # 扫二维码登录
+    itchat.auto_login(hotReload=True)
+    # 获取所有通讯录中的群聊
+    # 需要在微信中将需要同步的群聊都保存至通讯录
+    chatrooms = itchat.get_chatrooms(update=True, contactOnly=True)
+    #print ('chatrooms：', chatrooms)
+    #chatroom_ids = [c['UserName'] for c in chatrooms]
+    chatroom_ids=[]
+    chatroom_sync=[]
+    for c in chatrooms:
+        if c['NickName'] in ['华大小分队','华大']:
+            chatroom_ids.append(c['UserName'])
+        elif c['NickName'].find('那些年')>=0:
+        # if c['NickName'].index("那些年")>=0:
+            chatroom_sync.append(c)
+        #else:
+            #print ('排除的：',c['NickName'])
 
 
-print (' '.join([item['NickName'] for item in chatrooms]))
-print ('正在监测的群聊：', len(chatroom_ids), '个')
-print ('监测的群聊id：', chatroom_ids)
-print ('同步群id：', chatroom_sync)
-# 开始监测
-itchat.run()
+    print (' '.join([item['NickName'] for item in chatrooms]))
+    print ('正在监测的群聊：', len(chatroom_ids), '个')
+    print ('监测的群聊id：', chatroom_ids)
+    print ('同步群id：', chatroom_sync)
+    # 开始监测
+    itchat.run()
 
 
