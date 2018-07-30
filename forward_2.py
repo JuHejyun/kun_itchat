@@ -53,7 +53,7 @@ def group_reply_text(msg):
         #     if not item['UserName'] == chatroom_id:
         #         itchat.send('%s\n%s' % (username, msg['Content']), item['UserName'])
     elif msg['Type'] == SHARING:
-        q.put('%s %s (share): %s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
+        q.put('%s %s (share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
         # for item in chatroom_sync:
         #     if not item['UserName'] == chatroom_id:
         #         itchat.send('%s\n%s\n%s' % (username, msg['Text'], msg['Url']), item['UserName'])
