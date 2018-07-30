@@ -33,7 +33,8 @@ def group_reply_text(msg):
     chatroom_id = msg['FromUserName']
     # 发送者的昵称
     username = msg['ActualNickName']
- 
+    createtime = msg['CreateTime']
+
     # 消息并不是来自于需要同步的群
     if not chatroom_id in chatroom_ids:
         return
@@ -47,12 +48,12 @@ def group_reply_text(msg):
 
     # 根据消息类型转发至其他需要同步消息的群聊
     if msg['Type'] == TEXT:
-        q.put('robot --> %s:\n%s' % (username, msg['Content']))
+        q.put('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']))
         # for item in chatroom_sync:
         #     if not item['UserName'] == chatroom_id:
         #         itchat.send('%s\n%s' % (username, msg['Content']), item['UserName'])
     elif msg['Type'] == SHARING:
-        q.put('robot --> %s (share): %s\n%s' % (username, msg['Text'], msg['Url']))
+        q.put('%s %s (share): %s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
         # for item in chatroom_sync:
         #     if not item['UserName'] == chatroom_id:
         #         itchat.send('%s\n%s\n%s' % (username, msg['Text'], msg['Url']), item['UserName'])
@@ -89,21 +90,22 @@ def send_msg(q,tu,chatroom_sync):
     itchat.auto_login(hotReload=True)
     while True:
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        allmsg=set({})
+        allmsg=list()
         while not q.empty():
             value = q.get(True)  # 获取
-            print('Get %s from queue.' % value)
-            allmsg.add('%s\n' % value)
+            # print('Get %s from queue.' % value)
+            allmsg.append('%s\n' % value)
         if len(allmsg):
             for item in chatroom_sync:
                 # if not item['UserName'] == chatroom_id:
+                # allmsg.reverse()
                 print(''.join(str(e) for e in allmsg))
                 itchat.send(''.join(str(e) for e in allmsg), item['UserName'])
         while not tu.empty():
             value = tu.get(True)  # 获取
             for item in chatroom_sync:
                 itchat.send(value,item['UserName'])
-        time.sleep(10)
+        time.sleep(60)
 
 
 
@@ -122,9 +124,9 @@ if __name__ == '__main__':
     #chatroom_ids = [c['UserName'] for c in chatrooms]
     for c in chatrooms:
         # if c['NickName'] in ['华大小分队','华大']:
-        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('奶牛')>=0 or c['NickName'].find('内购')>=0 or c['NickName'].find('代购')>=0 or c['NickName'].find('盈透')>=0 or c['NickName'].find('租房')>=0:
+        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('北美股市实战')>=0 or c['NickName'].find('投资交流')>=0:
             chatroom_ids.append(c['UserName'])
-        elif c['NickName'].find('那些年')>=0:
+        elif c['NickName'].find('robot测试')>=0:
         # if c['NickName'].index("那些年")>=0:
             chatroom_sync.append(c)
         #else:
