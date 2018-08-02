@@ -84,7 +84,7 @@ def group_reply_media(msg):
     msg['Text'](filepath+msg['FileName'])
 
     #语音文件仅保存
-    if msg["msg_type"] == "Recording":
+    if msg['Type'] == "Recording":
         return
 
     if chatroom_id in chatroom_delay_ids:
