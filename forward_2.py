@@ -90,7 +90,7 @@ def group_reply_media(msg):
     # 转发至其他需要同步消息的群聊
     for item in chatroom_sync:
         if not item['UserName'] == chatroom_id:
-            itchat.send('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']), item['UserName'])
+            itchat.send('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), filepath+msg['FileName']), item['UserName'])
 
 #获取文件路径
 def getfilepath():
