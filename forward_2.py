@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding:utf8
+import os
 
 import itchat
 import time
@@ -48,15 +49,19 @@ def group_reply_text(msg):
 
     # 根据消息类型转发至其他需要同步消息的群聊
     if msg['Type'] == TEXT:
-        q.put('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']))
-        # for item in chatroom_sync:
-        #     if not item['UserName'] == chatroom_id:
-        #         itchat.send('%s\n%s' % (username, msg['Content']), item['UserName'])
+        if chatroom_id in chatroom_delay_ids:
+            q.put('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']))
+        else:
+            for item in chatroom_sync:
+                if not item['UserName'] == chatroom_id:
+                    itchat.send('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']), item['UserName'])
     elif msg['Type'] == SHARING:
-        q.put('%s %s(share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
-        # for item in chatroom_sync:
-        #     if not item['UserName'] == chatroom_id:
-        #         itchat.send('%s\n%s\n%s' % (username, msg['Text'], msg['Url']), item['UserName'])
+        if chatroom_id in chatroom_delay_ids:
+            q.put('%s %s(share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
+        else:
+            for item in chatroom_sync:
+                if not item['UserName'] == chatroom_id:
+                    itchat.send('%s %s(share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']), item['UserName'])
  
 # 自动回复图片等类别的群聊消息
 # isGroupChat=True表示为群聊消息          
@@ -74,17 +79,42 @@ def group_reply_media(msg):
     # 如果为gif图片则不转发
     if msg['FileName'][-4:] == '.gif':
         return
- 
-    # 下载图片等文件
-    msg['Text'](msg['FileName'])
 
-    tu.put('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']))
+    # 下载图片等文件
+    msg['Text'](filepath+msg['FileName'])
+    if chatroom_id in chatroom_delay_ids:
+        tu.put('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), filepath+msg['FileName']))
+        return
 
 
     # 转发至其他需要同步消息的群聊
-    # for item in chatroom_sync:
-    #     if not item['UserName'] == chatroom_id:
-    #         itchat.send('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']), item['UserName'])
+    for item in chatroom_sync:
+        if not item['UserName'] == chatroom_id:
+            itchat.send('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), msg['FileName']), item['UserName'])
+
+#获取文件路径
+def getfilepath():
+    # 系统当前时间年份
+    year = time.strftime('%Y', time.localtime(time.time()))
+    # 月份
+    month = time.strftime('%m', time.localtime(time.time()))
+    # 日期
+    day = time.strftime('%d', time.localtime(time.time()))
+    fileYear = year
+    fileMonth = fileYear + '/' + month
+    fileDay = fileMonth + '/' + day
+    if not os.path.exists(fileYear):
+        os.mkdir(fileYear)
+        os.mkdir(fileMonth)
+        os.mkdir(fileDay)
+    else:
+        if not os.path.exists(fileMonth):
+            os.mkdir(fileMonth)
+            os.mkdir(fileDay)
+        else:
+            if not os.path.exists(fileDay):
+                os.mkdir(fileDay)
+    return fileDay+'/'
 
 def send_msg(q,tu,chatroom_sync):
     itchat.auto_login(hotReload=True)
@@ -108,13 +138,18 @@ def send_msg(q,tu,chatroom_sync):
         time.sleep(60)
 
 
-
+#要监听的所有群
 chatroom_ids=[]
+#延时同步的群
+chatroom_delay_ids=[]
+#要同步的所有群
 chatroom_sync=[]
 # 父进程创建Queue，并传给各个子进程：
 q = Queue()
 tu = Queue()
+filepath=''
 if __name__ == '__main__':
+    filepath = getfilepath()
     # 扫二维码登录
     itchat.auto_login(hotReload=True)
     # 获取所有通讯录中的群聊
@@ -124,10 +159,11 @@ if __name__ == '__main__':
     #chatroom_ids = [c['UserName'] for c in chatrooms]
     for c in chatrooms:
         # if c['NickName'] in ['华大小分队','华大']:
-        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('北美股市实战')>=0 or c['NickName'].find('投资交流')>=0:
+        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('北美股市实战')>=0 or c['NickName'].find('投资交流')>=0 or c['NickName'].find('内购')>=0 or c['NickName'].find('代购')>=0:
             chatroom_ids.append(c['UserName'])
+            if c['NickName'].find('代购')>=0:
+                chatroom_delay_ids.append(c['UserName'])
         elif c['NickName'].find('robot测试')>=0:
-        # if c['NickName'].index("那些年")>=0:
             chatroom_sync.append(c)
         #else:
             #print ('排除的：',c['NickName'])
