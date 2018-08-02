@@ -65,7 +65,7 @@ def group_reply_text(msg):
  
 # 自动回复图片等类别的群聊消息
 # isGroupChat=True表示为群聊消息          
-@itchat.msg_register([PICTURE, ATTACHMENT, VIDEO], isGroupChat=True)
+@itchat.msg_register([PICTURE, ATTACHMENT, VIDEO, RECORDING], isGroupChat=True)
 def group_reply_media(msg):
     # 消息来自于哪个群聊
     chatroom_id = msg['FromUserName']
@@ -82,6 +82,11 @@ def group_reply_media(msg):
 
     # 下载图片等文件
     msg['Text'](filepath+msg['FileName'])
+
+    #语音文件仅保存
+    if msg["msg_type"] == "Recording":
+        return
+
     if chatroom_id in chatroom_delay_ids:
         tu.put('@%s@%s' % ({'Picture': 'img', 'Video': 'vid'}.get(msg['Type'], 'fil'), filepath+msg['FileName']))
         return
