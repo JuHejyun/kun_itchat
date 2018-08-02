@@ -135,7 +135,7 @@ def send_msg(q,tu,chatroom_sync):
             value = tu.get(True)  # 获取
             for item in chatroom_sync:
                 itchat.send(value,item['UserName'])
-        time.sleep(60)
+        time.sleep(60*5)
 
 
 #要监听的所有群
@@ -159,9 +159,9 @@ if __name__ == '__main__':
     #chatroom_ids = [c['UserName'] for c in chatrooms]
     for c in chatrooms:
         # if c['NickName'] in ['华大小分队','华大']:
-        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('北美股市实战')>=0 or c['NickName'].find('投资交流')>=0 or c['NickName'].find('内购')>=0 or c['NickName'].find('代购')>=0:
+        if c['NickName'].find('北美股市科研小组')>=0 or c['NickName'].find('北美股市实战')>=0 or c['NickName'].find('投资交流')>=0 or c['NickName'].find('内购')>=0 or c['NickName'].find('代购')>=0 or c['NickName'].find('银行')>=0:
             chatroom_ids.append(c['UserName'])
-            if c['NickName'].find('代购')>=0:
+            if c['NickName'].find('北美股市科研小组') >= 0 or c['NickName'].find('北美股市实战') >= 0 or c['NickName'].find('投资交流') >= 0 or c['NickName'].find('银行')>=0:
                 chatroom_delay_ids.append(c['UserName'])
         elif c['NickName'].find('robot测试')>=0:
             chatroom_sync.append(c)
