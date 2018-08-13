@@ -30,7 +30,7 @@ from itchat.content import *
 # isGroupChat=True表示为群聊消息
 @itchat.msg_register([TEXT, SHARING], isGroupChat=True)
 def group_reply_text(msg):
-    print(msg)
+    # print(msg)
 
     # 消息来自于哪个群聊
     chatroom_id = msg['FromUserName']
@@ -55,12 +55,18 @@ def group_reply_text(msg):
     if msg['Type'] == TEXT:
         # q.put('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']))
         q.put((chatroom_id,msg['Type'],g_name,username,msg['Content'],'',createtime,int(time.time())))
+        # 监听但不同步
+        if not chatroom_id in chatroom_delay_ids:
+            return
         for item in chatroom_sync:
             if not item['UserName'] == chatroom_id:
                 itchat.send('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']), item['UserName'])
     elif msg['Type'] == SHARING:
         # q.put('%s %s(share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
         q.put((chatroom_id, msg['Type'], g_name, username, '$s\n%s' % (msg['Text'], msg['Url']), '', createtime, int(time.time())))
+        # 监听但不同步
+        if not chatroom_id in chatroom_delay_ids:
+            return
         for item in chatroom_sync:
             if not item['UserName'] == chatroom_id:
                 itchat.send('%s %s(share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']), item['UserName'])
@@ -69,7 +75,7 @@ def group_reply_text(msg):
 # isGroupChat=True表示为群聊消息          
 @itchat.msg_register([PICTURE, ATTACHMENT, VIDEO, RECORDING], isGroupChat=True)
 def group_reply_media(msg):
-    print(msg)
+    # print(msg)
     # 消息来自于哪个群聊
     chatroom_id = msg['FromUserName']
     # 发送者的昵称
@@ -96,6 +102,10 @@ def group_reply_media(msg):
     if msg['Type'] == "Recording":
         return
 
+
+    # 监听但不同步
+    if not chatroom_id in chatroom_delay_ids:
+        return
 
     # 转发至其他需要同步消息的群聊
     for item in chatroom_sync:
@@ -167,7 +177,11 @@ def save_2_db(q):
 
         time.sleep(60)
 
+#要监听的所有群
 chatroom_ids=[]
+#延时同步的群
+chatroom_delay_ids=[]
+#要同步的所有群
 chatroom_sync=[]
 # 父进程创建Queue，并传给各个子进程：
 q = Queue()
@@ -194,13 +208,13 @@ if __name__ == '__main__':
     #chatroom_ids = [c['UserName'] for c in chatrooms]
     for c in chatrooms:
         # if c['NickName'] in ['华大小分队','华大']:
-        if c['NickName'].find('北美股市科研小组') >= 0 or c['NickName'].find('北美股市实战') >= 0 or c['NickName'].find(
-                '投资交流') >= 0 or c['NickName'].find('内购') >= 0 or c['NickName'].find('代购') >= 0 or c['NickName'].find(
-                '银行') >= 0:
+        if c['NickName'].find('北美股市科研小组1') >= 0 or c['NickName'].find('北美股市实战') >= 0:
             chatroom_ids.append(c['UserName'])
-        # elif c['NickName'].find('北美股市科研小组3')>=0:
+            if c['NickName'].find('北美股市实战')>=0:
+                chatroom_delay_ids.append(c['UserName'])
+        elif c['NickName'].find('北美股市科研小组3')>=0:
         # if c['NickName'].index("那些年")>=0:
-        #     chatroom_sync.append(c)
+            chatroom_sync.append(c)
         #else:
             #print ('排除的：',c['NickName'])
 
@@ -210,6 +224,7 @@ if __name__ == '__main__':
     print (' '.join([item['NickName'] for item in chatrooms]))
     print ('正在监测的群聊：', len(chatroom_ids), '个')
     print ('监测的群聊id：', chatroom_ids)
+    print ('监听不同步的群：', chatroom_delay_ids)
     print ('同步群id：', chatroom_sync)
     # 开始监测
     itchat.run()
