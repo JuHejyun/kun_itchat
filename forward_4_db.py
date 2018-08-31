@@ -200,7 +200,7 @@ cursor = conn.cursor()
 if __name__ == '__main__':
     filepath = getfilepath()
     # 扫二维码登录
-    itchat.auto_login(hotReload=True)
+    itchat.auto_login(hotReload=True, enableCmdQR=2)
     # 获取所有通讯录中的群聊
     # 需要在微信中将需要同步的群聊都保存至通讯录
     chatrooms = itchat.get_chatrooms(update=True, contactOnly=True)
