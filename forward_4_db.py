@@ -63,7 +63,7 @@ def group_reply_text(msg):
                 itchat.send('%s %s:\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Content']), item['UserName'])
     elif msg['Type'] == SHARING:
         # q.put('%s %s(share):\n%s\n%s' % (time.strftime("%H:%M:%S",time.localtime(createtime)),username, msg['Text'], msg['Url']))
-        q.put((chatroom_id, msg['Type'], g_name, username, '$s\n%s' % (msg['Text'], msg['Url']), '', createtime, int(time.time())))
+        q.put((chatroom_id, msg['Type'], g_name, username, '%s|%s' % (msg['Text'], msg['Url']), '', createtime, int(time.time())))
         # 监听但不同步
         if not chatroom_id in chatroom_delay_ids:
             return
