@@ -124,9 +124,9 @@ if __name__ == '__main__':
     #chatroom_ids = [c['UserName'] for c in chatrooms]
     for c in chatrooms:
         # if c['NickName'] in ['华大小分队','华大']:
-        if c['NickName'].find('北美股市实战')>=0:
+        if c['NickName'].find('美股科研小组2')>=0:
             chatroom_ids.append(c['UserName'])
-        elif c['NickName'].find('北美股市科研小组3')>=0:
+        elif c['NickName'].find('美股科研小组3')>=0:
         # if c['NickName'].index("那些年")>=0:
             chatroom_sync.append(c)
         #else:
